@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+      xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+  http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/context
+  http://www.springframework.org/schema/context/spring-context.xsd
+  http://www.springframework.org/schema/tx
+  http://www.springframework.org/schema/tx/spring-tx.xsd">
+  
+  <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+  		destroy-method="close"
+  		p:driverClassName="${jdbc.driverClassName}"
+  		p:url="${jdbc.url}"
+  		p:username="${jdbc.username}"
+  		p:password="${jdbc.password}" />
+  		
+  <bean id="sessionFactory"
+  		class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
+  		<property name="dataSource" ref="dataSource" />
+  		
+  		<property name="packagesToScan">
+  			<list>
+  				<value>git.com.postgraduate.bookstore.entity</value>
+  			</list>
+  		</property>
+  		<property name="hibernateProperties">
+  			<props>
+  				<prop key="hibernate.hbm2ddl.auto">update</prop>
+  				<prop key="hibernate.dialect">${hibernate.dialect}</prop>
+  				<prop key="hibernate.show_sql">false</prop>
+  			</props>
+  		</property>
+  </bean>
+  
+  <bean id="transactionManager"
+  		class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+  		<property name="sessionFactory" ref="sessionFactory" />
+  </bean>
+  
+ <tx:annotation-driven transaction-manager="transactionManager" />
+ 
+ <!-- jedis pool配置 -->
+ <bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
+ 	<property name="maxIdle" value="${redis.maxIdle}" />
+ 	<property name="maxWaitMillis" value="${redis.maxWait}" />
+ 	<!-- <property name="testOnBorrow" value="${redis.testOnBorrow}" /> -->
+ </bean>
+<!--  redis服务器配置 -->
+ <bean id="connectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+ 	<property name="poolConfig" ref="poolConfig" />
+ 	<property name="port" value="${redis.port}" />
+ 	<property name="hostName" value="${redis.host}" />
+ 	<property name="password" value="${redis.password}" />
+ 	<property name="timeout" value="${redis.timeout}" />
+ </bean>
+ <bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate">
+ 	<property name="connectionFactory" ref="connectionFactory" />
+ 	<property name="keySerializer">
+ 		<bean class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+ 	</property>
+ 	<property name="hashKeySerializer">
+ 		<bean class="org.springframework.data.redis.serializer.StringRedisSerializer" />
+ 	</property>
+ 	<property name="hashValueSerializer">
+ 		<bean class="org.springframework.data.redis.serializer.StringRedisSerializer" />
+ 	</property>
+ </bean>
+ 
+ <!-- springSecurity part configure -->
+ 
+ 
+<!--  cache配置 --><!-- 
+<bean id="methodCacheInterceptor" class="com.mucfc.msm.common.MethodCacheInterceptor"></bean> -->
+ 
+   
+</beans>
